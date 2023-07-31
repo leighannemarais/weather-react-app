@@ -1,94 +1,107 @@
-import React, { useState } from "react";
-import "./Weather.css";
+import React, { Component } from "react";
+import PropTypes from "prop-types";
 import axios from "axios";
+import "./Weather.css";
+import WeatherIcon from "./WeatherIcon";
+import CurrentLocation from "./CurrentLocation";
+import SearchEngine from "./SearchEngine";
+import DateUtil from "./DateUtil";
+import Api from "./Api";
+import Forecast from "./Forecast";
 
-export default function Weather() {
-  let weatherData = {
-    city: "New York",
-    date: "Tuesday 10:00",
-    description: "Cloudy",
-    imgUrl: "https://ssl.gstatic.com/onebox/weather/64/sunny.png",
-    humidity: "80%",
-    wind: "30 km/h",
-    temp: "19",
+export default class Weather extends Component {
+  static propTypes = {
+    city: PropTypes.string.isRequired,
   };
-  function SearchEngine() {
-    const [city, setCity] = useState("");
-    const [loaded, setLoaded] = useState(false);
-    const [weather, setWeather] = useState({});
 
-    function displayWeather(response) {
-      setLoaded(true);
-      setWeather({
-        temperature: response.data.main.temp,
-        wind: response.data.wind.speed,
-        humidity: response.data.main.humidity,
-        icon: `https://openweathermap.org/img/wn/${response.data.weather[0].icon}.png`,
-        description: response.data.weather[0].description,
+  state = {
+    city: this.props.city,
+  };
+
+  componentWillMount() {
+    this.refresh(this.state.city);
+  }
+
+  refreshWeatherFromParams(params) {
+    let url = `${Api.url}/data/2.5/weather?appid=${Api.key}&units=metric&${params}`;
+    axios.get(url).then((response) => {
+      this.setState({
+        city: response.data.name,
+        weather: {
+          description: response.data.weather[0].main,
+          icon: response.data.weather[0].icon,
+          precipitation: Math.round(response.data.main.humidity) + "%",
+          temperature: Math.round(response.data.main.temp),
+          time: new DateUtil(new Date(response.data.dt * 1000)).dayTime(),
+          wind: Math.round(response.data.wind.speed) + "km/h",
+        },
       });
-    }
+    });
+  }
 
-    function handleSubmit(event) {
-      event.preventDefault();
-      let apiUrl = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=502dc8f7ae36e57af1974e18d16a86f8&units=metric`;
-      axios.get(apiUrl).then(displayWeather);
-    }
+  refreshWeatherFromLatitudeAndLongitude = (latitude, longitude) => {
+    this.refreshWeatherFromParams(`lat=${latitude}&lon=${longitude}`);
+  };
 
-    function updateCity(event) {
-      setCity(event.target.value);
-    }
+  refresh = (city) => {
+    this.refreshWeatherFromParams(`q=${city}`);
+  };
 
-    let form = (
-      <form onSubmit={handleSubmit}>
-        <input type="search" placeholder="Enter a city" onChange={updateCity} />
-        <button type="Submit">Search</button>
-      </form>
-    );
-
-    if (loaded) {
+  render() {
+    if (this.state.weather) {
       return (
         <div>
-          {form}
-          <ul>
-            <li>Temperature: {Math.round(weather.temperature)}°C</li>
-            <li>Description: {weather.description}</li>
-            <li>Humidity: {weather.humidity}%</li>
-            <li>Wind: {weather.wind}km/h</li>
-            <li>
-              <img src={weather.icon} alt="Weather Icon" />
-            </li>
-          </ul>
+          <div className="clearfix">
+            <SearchEngine refresh={this.refresh} />
+            <CurrentLocation
+              refresh={this.refreshWeatherFromLatitudeAndLongitude}
+            />
+          </div>
+
+          <div className="weather-summary">
+            <div className="weather-summary-header">
+              <h1>{this.state.city}</h1>
+              <div className="weather-detail__text">
+                {this.state.weather.time}
+              </div>
+              <div className="weather-detail__text">
+                {this.state.weather.description}
+              </div>
+            </div>
+
+            <div className="row">
+              <div className="col-sm-6">
+                <div className="clearfix">
+                  <div className="float-left weather-icon">
+                    <WeatherIcon iconName={this.state.weather.icon} />
+                  </div>
+                  <div className="weather-temp weather-temp--today">
+                    {this.state.weather.temperature}
+                  </div>
+                  <div className="weather-unit__text weather-unit__text--today">
+                    °C
+                  </div>
+                </div>
+              </div>
+              <div className="col-sm-6">
+                <div className="weather-detail__text">
+                  Precipitation: {this.state.weather.precipitation}
+                </div>
+                <div className="weather-detail__text">
+                  Wind: {this.state.weather.wind}
+                </div>
+              </div>
+            </div>
+          </div>
+          <Forecast city={this.state.city} />
         </div>
       );
     } else {
-      return form;
+      return (
+        <div>
+          App is loading, <em>please wait...</em>
+        </div>
+      );
     }
   }
-  return (
-    <div className="Weather">
-      <div className="overview">
-        <h1>{weatherData.city}</h1>
-
-        <li>Last updated: {weatherData.date}</li>
-        <li>{weatherData.description}</li>
-      </div>
-      <div className="row">
-        <div className="col-6">
-          <div className="d-flex weather-temperature">
-            <img src={weatherData.imgUrl} alt="Clear" />
-            <div>
-              <strong>{weatherData.temp}</strong>
-              <span className="units"> °C</span>
-            </div>
-          </div>
-        </div>
-        <div className="col-6">
-          <ul>
-            <li>Humidity: {weatherData.humidity}</li>
-            <li>Wind: {weatherData.wind}</li>
-          </ul>
-        </div>
-      </div>
-    </div>
-  );
 }

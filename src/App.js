@@ -1,13 +1,15 @@
-import "./index.css";
-import Weather from "./Weather";
-import "./App.css";
-import SearchEngine from "./SearchEngine";
+import React, { Component } from "react";
+import "bootstrap/dist/css/bootstrap.css";
+import Navigation from "./Navigation";
+import Main from "./Main";
 
-export default function App() {
-  return (
-    <div className="App">
-      <Weather />
-      <SearchEngine />
-    </div>
-  );
+export default class App extends Component {
+  render() {
+    return (
+      <div>
+        <Navigation />
+        <Main />
+      </div>
+    );
+  }
 }
