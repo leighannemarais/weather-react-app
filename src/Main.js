@@ -16,6 +16,8 @@ export default class App extends Component {
               </div>
             )}
           />
+        </Routes>
+        <Routes>
           <Route
             exact={true}
             path="/paris"
@@ -25,6 +27,8 @@ export default class App extends Component {
               </div>
             )}
           />
+        </Routes>
+        <Routes>
           <Route
             exact={true}
             path="/sydney"
@@ -34,6 +38,8 @@ export default class App extends Component {
               </div>
             )}
           />
+        </Routes>
+        <Routes>
           <Route
             exact={true}
             path="/san-francisco"
