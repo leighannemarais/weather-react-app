@@ -18,7 +18,7 @@ export default class Weather extends Component {
     city: this.props.city,
   };
 
-  componentWillMount() {
+  componentDidMount() {
     this.refresh(this.state.city);
   }
 

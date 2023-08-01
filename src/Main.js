@@ -10,11 +10,11 @@ export default class App extends Component {
           <Route
             exact={true}
             path="/"
-            render={() => (
+            element={
               <div className="App">
                 <Weather city="lisbon" />
               </div>
-            )}
+            }
           />
         </Routes>
         <Routes>

@@ -9,14 +9,8 @@ export default class Forecast extends Component {
   state = {
     city: this.props.city,
   };
-  componentWillMount() {
+  componentDidUpdate() {
     this.refresh();
-  }
-
-  componentWillReceiveProps(nextProps) {
-    this.setState({ city: nextProps.city }, () => {
-      this.refresh();
-    });
   }
 
   refresh = () => {
